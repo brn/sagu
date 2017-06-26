@@ -51,7 +51,7 @@ for await (const {ok, response} of poll('https://sample.com', {}, 1000)) {
 etc...
 
 
-#### Sagu convert callback async function to simple loops.
+#### Sagu convert async callback function to simple loops.
 
 
 ## Install
