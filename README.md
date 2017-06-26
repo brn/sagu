@@ -23,6 +23,28 @@ for await (const {event, dispose} of event(a, 'click')) {
 }
 ```
 
+### Socket.IO
+
+**So far**
+
+```javascript
+const conn = io('http://www.sample.com/ws');
+conn.on('connection', ...);
+conn.on('request', ...);
+```
+
+**With sagu**
+```javascript
+for await (const {ok, type, event} of ws('http://www.sample.com/ws', ws)) {
+  switch (type) {
+    case 'connection':
+    ...
+    case 'request':
+    ...
+  }
+  ...
+}
+```
 
 ### Polling
 
