@@ -1,0 +1,80 @@
+{
+  "name": "sagu",
+  "version": "0.0.2",
+  "description": "javascript Async Iteration utilities.",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "jsnext:main": "src/index.js",
+  "scripts": {
+    "test": "node node_modules/.bin/karma start --browsers PhantomJS --single-run",
+    "bundle-iife": "node node_modules/.bin/rollup -c rollup.config.js -o dist/index-iife.js",
+    "bundle-es": "node node_modules/.bin/rollup -c rollup.config.es.js -o dist/index.esm.js",
+    "bundle-cjs": "node node_modules/.bin/rollup -c rollup.config.cjs.js -o dist/index.cjs.js",
+    "clean": "rm -rf dist 2> /dev/null",
+    "bundle": "npm run clean && npm run bundle-iife && npm run bundle-es && npm run bundle-cjs",
+    "pub": "npm test && npm run bundle && npm publish"
+  },
+  "author": "Taketoshi Aono(brn)",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-async-generator-functions": "^6.24.1",
+    "babel-plugin-transform-regenerator": "^6.24.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-es2015-loose-rollup": "^7.0.0",
+    "babel-preset-stage-3": "^6.24.1",
+    "babel-runtime": "^6.23.0",
+    "chai": "^4.0.2",
+    "core-js": "^2.4.1",
+    "eventemitter2": "^4.1.0",
+    "express": "^4.15.3",
+    "karma": "^1.7.0",
+    "karma-babel-preprocessor": "^6.0.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-express-server": "^0.1.4",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.3",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "karma-rollup-preprocessor": "^4.0.0",
+    "karma-socketio-server": "^1.0.0",
+    "karma-source-map-support": "^1.2.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "mocha": "^3.4.2",
+    "rollup": "^0.43.0",
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "socket.io": "^2.0.3",
+    "source-map-support": "^0.4.15",
+    "sse-express": "^1.0.2",
+    "whatwg-fetch": "^2.0.3"
+  },
+  "babel": {
+    "plugins": [
+      "external-helpers",
+      [
+        "transform-runtime",
+        {
+          "helpers": false,
+          "polyfill": false,
+          "regenerator": true,
+          "moduleName": "babel-runtime"
+        }
+      ]
+    ],
+    "presets": [
+      [
+        "es2015",
+        {
+          "modules": false
+        }
+      ],
+      "stage-3"
+    ]
+  }
+}
