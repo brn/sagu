@@ -92,12 +92,12 @@ describe('sagu', () => {
 
     describe('@retryable()', () => {
       it('should retry fetch request if failed.', async () => {
-        const {success, response} = await retryable(`http://localhost:9877/failed?_=${Date.now()}`, {
+        const {ok, response} = await retryable(`http://localhost:9877/failed?_=${Date.now()}`, {
           options: {mode: 'cors'},
           limit: 10,
           timing() {return 100}
         });
-        expect(success).to.be.eq(true);
+        expect(ok).to.be.eq(true);
         const json = await response.json();
         expect(json).to.be.deep.eq({key: 'success'});
       });

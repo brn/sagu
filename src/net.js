@@ -177,9 +177,9 @@ export async function retryable(url, {options = {}, timing = () => 1000, limit =
   for await (const time of infinity(1)) {
     const response = await fetch(url, options).catch(r => r);
     if (response && !isFailed(response)) {
-      return {success: true, response};
+      return {ok: true, response};
     } else if (time > limit) {
-      return {success: false, response};
+      return {ok: false, response};
     }
     await wait(timing(time));
   }

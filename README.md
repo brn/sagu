@@ -35,7 +35,7 @@ conn.on('request', ...);
 
 **With sagu**
 ```javascript
-for await (const {ok, type, event} of ws('http://www.sample.com/ws', ws)) {
+for await (const {type, event} of ws('http://www.sample.com/ws', ws)) {
   switch (type) {
     case 'connection':
     ...
