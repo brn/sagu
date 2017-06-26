@@ -34,9 +34,9 @@ describe('sagu', () => {
       it('should polling http request.', async () => {
         const values = [];
         let count = 0;
-        const expectation = {ok: true, status: 200};
-        for await (const res of poll('/', {method: 'GET'}, 100)) {
-          values.push({status: res.status, ok: res.ok});
+        const expectation = {ok: true, ok: true, status: 200};
+        for await (const {ok, response} of poll('/', {method: 'GET'}, 100)) {
+          values.push({ok, status: response.status, ok: response.ok});
           if (count++ > 5) {
             break;
           }

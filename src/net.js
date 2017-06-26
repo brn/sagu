@@ -33,7 +33,11 @@ import {
  */
 export async function* poll(url, options, interval = 1000) {
   for await (const p of infinity(interval, true)) {
-    yield await fetch(url, options);
+    yield await fetch(url, options).then(response => {
+      return response.ok? {ok: true, response}: {ok: false, error: response};
+    }, e => {
+      return {ok: false, error: e};
+    });
   }
 }
 
