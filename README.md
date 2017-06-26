@@ -2,7 +2,7 @@
 
 Simple Async Generator Utils
 
-Game changeer of javascript asynchronous process.
+Game changer of javascript asynchronous process.
 
 **Sagu how change async process of javascript?**
 
