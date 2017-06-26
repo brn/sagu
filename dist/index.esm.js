@@ -769,7 +769,6 @@ var index = runtimeModule;
  */
 function promisifyCallback(target, type, set) {
   var types = Array.isArray(type) ? type : [type];
-
   var buffer = [];
 
   var _resolver = null;
@@ -1090,127 +1089,6 @@ var emitter = function () {
 }();
 
 /**
- * Make fetch function to Retriable.
- * @param {Promise<Response>} promise Fetch result.
- * @param {number} max Max retriable count.
- * @param {function(number): number} timingFn Retry timing generator.
- * @returns {Response}
- *
- * @example
- * const response = await retrify(fetch('https://www.google.co.jp', {}), 5, time => time ** 2);
- */
-var retrify = function () {
-  var _ref4 = babelHelpers.asyncToGenerator(index.mark(function _callee4(promise) {
-    var max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 10;
-    var timingFn = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {
-      return 2000;
-    };
-
-    var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _value2, time, ret;
-
-    return index.wrap(function _callee4$(_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            _iteratorNormalCompletion2 = true;
-            _didIteratorError2 = false;
-            _iteratorError2 = undefined;
-            _context4.prev = 3;
-            _iterator2 = babelHelpers.asyncIterator(infinity(1));
-
-          case 5:
-            _context4.next = 7;
-            return _iterator2.next();
-
-          case 7:
-            _step2 = _context4.sent;
-            _iteratorNormalCompletion2 = _step2.done;
-            _context4.next = 11;
-            return _step2.value;
-
-          case 11:
-            _value2 = _context4.sent;
-
-            if (_iteratorNormalCompletion2) {
-              _context4.next = 24;
-              break;
-            }
-
-            time = _value2;
-            _context4.next = 16;
-            return promise;
-
-          case 16:
-            ret = _context4.sent;
-
-            if (!(ret.ok || time > max)) {
-              _context4.next = 19;
-              break;
-            }
-
-            return _context4.abrupt('return', ret);
-
-          case 19:
-            _context4.next = 21;
-            return wait(timingFn(time));
-
-          case 21:
-            _iteratorNormalCompletion2 = true;
-            _context4.next = 5;
-            break;
-
-          case 24:
-            _context4.next = 30;
-            break;
-
-          case 26:
-            _context4.prev = 26;
-            _context4.t0 = _context4['catch'](3);
-            _didIteratorError2 = true;
-            _iteratorError2 = _context4.t0;
-
-          case 30:
-            _context4.prev = 30;
-            _context4.prev = 31;
-
-            if (!(!_iteratorNormalCompletion2 && _iterator2.return)) {
-              _context4.next = 35;
-              break;
-            }
-
-            _context4.next = 35;
-            return _iterator2.return();
-
-          case 35:
-            _context4.prev = 35;
-
-            if (!_didIteratorError2) {
-              _context4.next = 38;
-              break;
-            }
-
-            throw _iteratorError2;
-
-          case 38:
-            return _context4.finish(35);
-
-          case 39:
-            return _context4.finish(30);
-
-          case 40:
-          case 'end':
-            return _context4.stop();
-        }
-      }
-    }, _callee4, this, [[3, 26, 30, 40], [31,, 35, 39]]);
-  }));
-
-  return function retrify(_x12) {
-    return _ref4.apply(this, arguments);
-  };
-}();
-
-/**
  * The MIT License (MIT)
  * Copyright (c) Taketoshi Aono(brn)
  *  
@@ -1228,7 +1106,7 @@ var retrify = function () {
  */
 
 /**
- * Polling request.
+ * Polling http.
  * @param {string} url Url to fetch.
  * @param {Object} options Fetch options.
  * @param {number} interval polling interval.
@@ -1269,7 +1147,11 @@ var poll = function () {
 
             p = _value;
             _context.next = 16;
-            return babelHelpers.asyncGenerator.await(fetch(url, options));
+            return babelHelpers.asyncGenerator.await(fetch(url, options).then(function (response) {
+              return response.ok ? { ok: true, response: response } : { ok: false, error: response };
+            }, function (e) {
+              return { ok: false, error: e };
+            }));
 
           case 16:
             _context.next = 18;
@@ -1332,12 +1214,12 @@ var poll = function () {
 }();
 
 /**
- * Asify ServerSentEvent.
+ * Create ServerSentEvent async generator that yield each response.
  * @param {string|string[]} type Event type.
  * @param {string} url Server endpoint.
  *
  * @example
- * for await (const ret of sse('status', 'https://www.event.com')) {
+ * for await (const {event, type, dispose} of sse('status', 'https://www.ex.com/event')) {
  *   console.log(ret);
  * }
  */
@@ -1382,6 +1264,16 @@ var sse = function () {
   };
 }();
 
+/**
+ * Create magic function that convert websocket event handler to async generator.
+ * @param {string} url Url to connect.
+ * @param {function(*, string, Function, Function): Function} setHandler Set event handler funcion.
+ * @param {function(*, string, Function, Function): void} removeHandler Remove event function.
+ * @param {WebSocket|SocketIO} io WebSocket or SocketIO
+ * @param {string[]} eventTypes Listening event list.
+ * @param {string[]} errorTypes Listening error event list.
+ * @returns {Function} WebSocket callback async generator.
+ */
 function websocketGenerator(url, setHandler, removeHandler) {
   var io = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function (url) {
     return new WebSocket(url);
@@ -1402,6 +1294,11 @@ function websocketGenerator(url, setHandler, removeHandler) {
   });
 }
 
+/**
+ * Native WebSocket async generator function.
+ * @param {string} url Url to connect.
+ * @returns {Function} WebSocket callback async generator.
+ */
 function websocket(url) {
   return websocketGenerator(url, function (c, type, cb) {
     return c[type] = cb;
@@ -1410,6 +1307,13 @@ function websocket(url) {
   });
 }
 
+/**
+ * Socket.IO async generator function.
+ * @param {string} url Url to connect.
+ * @param {string|string[]} events SocketIO additional events.
+ * @param {SocketIO} io SocketIO constructor.
+ * @returns {Function} SocketIO callback async generator.
+ */
 function socketio(url, events, io) {
   return websocketGenerator(url, function (c, type, cb) {
     return c.on(type, cb);
@@ -1418,6 +1322,13 @@ function socketio(url, events, io) {
   }, io, (Array.isArray(events) ? events : [events]).concat(['connect', 'event', 'disconnect', 'ping', 'pong', 'reconnect', 'reconnect_attempt', 'reconnecting']), ['error', 'connect_error', 'connect_timeout', 'reconnect_error', 'reconnect_failed']);
 }
 
+/**
+ * Async Generator WebSocket generator.
+ * @param {string} url Url to connect.
+ * @param {string|string[]} events SocketIO additional events.
+ * @param {SocketIO} socketIO Socket.IO constructor function.
+ * @throws {Error} 
+ */
 var ws = function () {
   var _ref3 = babelHelpers.asyncGenerator.wrap(index.mark(function _callee3(url, events) {
     var socketIO = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -1476,6 +1387,150 @@ var ws = function () {
 }();
 
 /**
+ * Make fetch function to Retriable.
+ * @param {Function(): Promise<Response>} promise Fetch result.
+ * @param {number} max Max retriable count.
+ * @param {function(number): number} timingFn Retry timing generator.
+ * @returns {Response}
+ *
+ * @example
+ * const response = await retryable(`http://localhost:9877/failed?_=${Date.now()}`, {
+ *   options: {mode: 'cors'}, // optional
+ *   limit: 10, // optional default 5
+ *   timing() {return 100}, // optional  default 1000
+ *   isError(response) {return !response.ok} // optional default !response.ok
+ * })
+ */
+var retryable = function () {
+  var _ref4 = babelHelpers.asyncToGenerator(index.mark(function _callee4(url, _ref5) {
+    var _ref5$options = _ref5.options,
+        options = _ref5$options === undefined ? {} : _ref5$options,
+        _ref5$timing = _ref5.timing,
+        timing = _ref5$timing === undefined ? function () {
+      return 1000;
+    } : _ref5$timing,
+        _ref5$limit = _ref5.limit,
+        limit = _ref5$limit === undefined ? 5 : _ref5$limit,
+        _ref5$isFailed = _ref5.isFailed,
+        isFailed = _ref5$isFailed === undefined ? function (res) {
+      return !res.ok;
+    } : _ref5$isFailed;
+
+    var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _value2, time, response;
+
+    return index.wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            _iteratorNormalCompletion2 = true;
+            _didIteratorError2 = false;
+            _iteratorError2 = undefined;
+            _context4.prev = 3;
+            _iterator2 = babelHelpers.asyncIterator(infinity(1));
+
+          case 5:
+            _context4.next = 7;
+            return _iterator2.next();
+
+          case 7:
+            _step2 = _context4.sent;
+            _iteratorNormalCompletion2 = _step2.done;
+            _context4.next = 11;
+            return _step2.value;
+
+          case 11:
+            _value2 = _context4.sent;
+
+            if (_iteratorNormalCompletion2) {
+              _context4.next = 28;
+              break;
+            }
+
+            time = _value2;
+            _context4.next = 16;
+            return fetch(url, options).catch(function (r) {
+              return r;
+            });
+
+          case 16:
+            response = _context4.sent;
+
+            if (!(response && !isFailed(response))) {
+              _context4.next = 21;
+              break;
+            }
+
+            return _context4.abrupt('return', { ok: true, response: response });
+
+          case 21:
+            if (!(time > limit)) {
+              _context4.next = 23;
+              break;
+            }
+
+            return _context4.abrupt('return', { ok: false, response: response });
+
+          case 23:
+            _context4.next = 25;
+            return wait(timing(time));
+
+          case 25:
+            _iteratorNormalCompletion2 = true;
+            _context4.next = 5;
+            break;
+
+          case 28:
+            _context4.next = 34;
+            break;
+
+          case 30:
+            _context4.prev = 30;
+            _context4.t0 = _context4['catch'](3);
+            _didIteratorError2 = true;
+            _iteratorError2 = _context4.t0;
+
+          case 34:
+            _context4.prev = 34;
+            _context4.prev = 35;
+
+            if (!(!_iteratorNormalCompletion2 && _iterator2.return)) {
+              _context4.next = 39;
+              break;
+            }
+
+            _context4.next = 39;
+            return _iterator2.return();
+
+          case 39:
+            _context4.prev = 39;
+
+            if (!_didIteratorError2) {
+              _context4.next = 42;
+              break;
+            }
+
+            throw _iteratorError2;
+
+          case 42:
+            return _context4.finish(39);
+
+          case 43:
+            return _context4.finish(34);
+
+          case 44:
+          case 'end':
+            return _context4.stop();
+        }
+      }
+    }, _callee4, this, [[3, 30, 34, 44], [35,, 39, 43]]);
+  }));
+
+  return function retryable(_x12, _x13) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+
+/**
  * The MIT License (MIT)
  * Copyright (c) Taketoshi Aono(brn)
  *  
@@ -1492,4 +1547,4 @@ var ws = function () {
  * @author Taketoshi Aono(brn)
  */
 
-export { event, wait, intervals, infinity, emitter, poll, sse, ws };
+export { event, wait, intervals, infinity, emitter, poll, sse, ws, retryable };
