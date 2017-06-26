@@ -10,13 +10,13 @@ Game changer of javascript asynchronous process.
 
 **So far**
 
-```
+```javascript
 const a = document.querySelector('a');
 a.addEventListener('click', e => console.log(e.target.nodeName));
 ```
 
 **With sagu**
-```
+```javascript
 const a = document.querySelector('a');
 for await (const {event, dispose} of event(a, 'click')) {
   console.log(event.target.nodeName);
@@ -28,7 +28,7 @@ for await (const {event, dispose} of event(a, 'click')) {
 
 **So far**
 
-```
+```javascript
 // polling.
 async function poll() {
   const res = await fetch('https://sample.com');
@@ -40,7 +40,7 @@ poll();
 ```
 
 **With sagu**
-```
+```javascript
 // polling
 for await (const {ok, response} of poll('https://sample.com', {}, 1000)) {
   const json = await response.json();
