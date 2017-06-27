@@ -149,3 +149,6 @@ In detail,see
 [https://github.com/tc39/proposal-async-iteration](https://github.com/tc39/proposal-async-iteration)
 
 
+## API
+
+See [API](./api.md)

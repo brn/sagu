@@ -30,10 +30,16 @@ export function promisifyCallback(target, type, set) {
   let resolver = null;
   let disposes = {};
 
+  function dispose() {
+    for (const key in disposes) {
+      disposes[key]();
+    }
+  }
+
   function getEventHandler(isResolver, type) {
     return e => {
       const diff = isResolver? {event: e, error: null}: {event: null, error: e};
-      const o = {...diff, type, dispose: disposes[type]};
+      const o = {...diff, type, dispose};
       if (isResolver && resolver) {
         resolver(o);
       } else {

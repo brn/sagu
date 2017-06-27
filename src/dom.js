@@ -51,7 +51,7 @@ function match(el, sel) {
  * }
  */
 export async function* event(dom, type, selector = null) {
-  const hook = promisifyCallback(dom, type, (target, type, cb) => {
+  const hook = promisifyCallback(typeof dom === 'string'? document.querySelector(dom): dom, type, (target, type, cb) => {
     const callback = selector? e => {
       if (match(e.target, selector)) {
         cb(e);
