@@ -1,6 +1,6 @@
 # API
 
-## wait<T>(ms: number, retval?: T): Promise<Generator<T>>
+## `wait<T>(ms: number, retval?: T): Promise<Generator<T>>`
 
 * `ms: number` Milliseconds to wait.
 * `retval: T` Return value of wait. `default: null`.
