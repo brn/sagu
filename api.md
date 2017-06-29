@@ -12,7 +12,7 @@ wait<T>(ms: number, retval?: T): Promise<Generator<T>>
 
 Wait specified milliseconds.
 
-### examples
+**examples**
 
 ```javascript
 for await (const x of [100, 200, 300]) {
@@ -32,7 +32,7 @@ intervals(time: number, skipStart: boolean = false): Promise<Generator<number>>
 
 Loop specified milliseconds intervals.
 
-### examples
+**examples**
 
 ```javascript
 for await (const count of intervals(100)) {
@@ -53,7 +53,7 @@ infinity(start: number = 0): Promise<Generator<number>>
 
 Infinite value generator.
 
-### examples
+**examples**
 
 ```javascript
 for (const count of infinity(1)) {
@@ -76,7 +76,7 @@ emitter(emitter: EventEmitter, type: string): Promise<Generator<{event: any, typ
 
 Listening and wating event emitter event.
 
-### examples
+**examples**
 
 ```javascript
 for await (const {event, dispose} of emitter(em, 'event')) {
