@@ -15,18 +15,19 @@
  * @author Taketoshi Aono(brn)
  */
 
-import "core-js";
-import 'whatwg-fetch';
+import io from 'socket.io-client';
 import {
   poll,
   ws,
   sse,
-  retryable
+  retryable,
+  stream,
+  Buffer
 } from '../net';
 import {
   expect
 } from 'chai';
-
+import EXAMPLES_JSON from '../../examples.json';
 
 describe('sagu', () => {
   describe('net', () => {
@@ -73,6 +74,7 @@ describe('sagu', () => {
       it('should wait websocket response with socket.io.', async () => {
         const values = [];
         let count = 0;
+
         for await (const {event, type, dispose} of ws('ws://localhost:9877', 'request', io)) {
           switch (type) {
           case 'request':
@@ -100,6 +102,53 @@ describe('sagu', () => {
         expect(ok).to.be.eq(true);
         const json = await response.json();
         expect(json).to.be.deep.eq({key: 'success'});
+      });
+    });
+
+    describe('@stream()', () => {
+      it('should buffering binary streaming data.', async () => {
+        const expectationsData = '0'.repeat(10000).split('0').map((v, i) => i);
+        const expectations = new Uint8Array(new ArrayBuffer(expectationsData.length));
+        expectations.set(expectationsData);
+        for await (const {chunk, ok, done} of stream('http://localhost:9877/binary-stream', {binary: true})) {
+          if (done) {
+            const ret = chunk.drainBuffer();
+            expect(ret.length).to.be.eq(10001);
+            expect(ret).to.be.deep.eq(expectations);
+            break;
+          }
+        }
+      });
+
+      it('should not buffering binary streaming data.', async () => {
+        const buffer = [];
+        const expectationsData = '0'.repeat(10000).split('0').map((v, i) => i);
+        const expectations = new Uint8Array(new ArrayBuffer(expectationsData.length));
+        expectations.set(expectationsData);
+        for await (const {chunk, ok, done} of stream('http://localhost:9877/binary-stream', {binary: true, buffering: false})) {
+          buffer.push(chunk.read());
+          if (done) {
+            let ret = chunk.drainBuffer();
+            expect(ret).to.be.eq(null);
+            ret = Buffer.concat(buffer);
+            expect(ret.length).to.be.eq(10001);
+            expect(ret).to.be.deep.eq(expectations);
+            break;
+          }
+        }
+      });
+
+      it('should buffering json streaming data.', async () => {
+        const len = JSON.stringify(EXAMPLES_JSON).length;
+        for await (const {chunk, ok, done} of stream('http://localhost:9877/json-stream', {binary: false})) {
+          if (done) {
+            const ret = chunk.drainBuffer();
+            const json = JSON.parse(ret);
+            expect(JSON.stringify(json).length).to.be.eq(len);
+            expect(json).to.be.deep.eq(EXAMPLES_JSON);
+            break;
+          }
+        }
       });
     });
   });

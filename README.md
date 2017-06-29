@@ -2,9 +2,37 @@
 
 Simple Async Generator Utils
 
-Game changer of javascript asynchronous process.
+Game changer of javascript asynchronous process.  
+Sagu convert async callback functions to simple loop.
 
 **Sagu how change async process of javascript?**
+
+### Stream api
+
+**So far**
+
+```javascript
+const res = await fetch('http://ex.com/stream');
+res.body.pipeTo(new WritableStream({
+  write(chunk) {
+    console.log("Chunk received", chunk);
+  },
+  close() {
+    console.log("All data successfully read!");
+  },
+  abort(e) {
+    console.error("Something went wrong!", e);
+  }
+}));
+```
+
+**With sagu**
+
+```javascript
+for await (const {chunk, ok, done} of stream('http://ex.com/stream', {binary: true})) {
+  console.log(chunk.read());
+}
+```
 
 ### Event
 

@@ -1,12 +1,13 @@
 {
   "name": "sagu",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "javascript Async Iteration utilities.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "jsnext:main": "src/index.js",
   "scripts": {
-    "test": "node node_modules/.bin/karma start --browsers PhantomJS --single-run",
+    "test": "node node_modules/.bin/karma start --browsers ChromeHeadless --single-run",
+    "test-chrome": "node node_modules/.bin/karma start --browsers Chrome --single-run",
     "bundle-iife": "node node_modules/.bin/rollup -c rollup.config.js -o dist/index-iife.js",
     "bundle-es": "node node_modules/.bin/rollup -c rollup.config.es.js -o dist/index.esm.js",
     "bundle-cjs": "node node_modules/.bin/rollup -c rollup.config.cjs.js -o dist/index.cjs.js",
@@ -47,25 +48,18 @@
     "rollup": "^0.43.0",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-uglify": "^2.0.1",
     "socket.io": "^2.0.3",
+    "socket.io-client": "^2.0.3",
     "source-map-support": "^0.4.15",
     "sse-express": "^1.0.2",
     "whatwg-fetch": "^2.0.3"
   },
   "babel": {
     "plugins": [
-      "external-helpers",
-      [
-        "transform-runtime",
-        {
-          "helpers": false,
-          "polyfill": false,
-          "regenerator": true,
-          "moduleName": "babel-runtime"
-        }
-      ]
+      "external-helpers"
     ],
     "presets": [
       [
