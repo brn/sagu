@@ -64,15 +64,24 @@ for (const count of infinity(1)) {
 ## emitter
 
 ```typescript
-emitter(emitter: EventEmitter, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>
+type EmitterResponse = {
+  // Emitter arguments.
+  event: any
+
+  // EventEmitter event type.
+  type: string
+
+  // Function that dispose current listening event.
+  dispose: () => void
+}
+```
+
+```typescript
+emitter(emitter: EventEmitter, type: string): Promise<Generator<EmitterResponse>>
 ```
 
 * `emitter: EventEmitter` EventEmitter instance.
 * `type: string` Event type.
-* `Return`
-    * `event: any` Emitter arguments.
-    * `type: string` EventEmitter event type.
-    * `dispose: () => void` Function that dispose current listening event.
 
 Listening and wating event emitter event.
 
@@ -90,15 +99,22 @@ for await (const {event, dispose} of emitter(em, 'event')) {
 ## poll
 
 ```typescript
-poll(url: string, options: FetchOption, interval: number = 1000): Promise<Generator<{ok: boolean, response: Response}>>
+type PollResponse = {
+  // Whether fetch success or not.
+  ok: boolean
+
+  // Fetch response.
+  response: Response
+}
+```
+
+```typescript
+poll(url: string, options: FetchOption, interval: number = 1000): Promise<Generator<PollResponse>>
 ```
 
 * `url: string` Request endpoint.
 * `options: FetchOption` Fetch options.
 * `interval: number = 1000` Milliseconds to interval.
-* `Return`
-    * `ok: boolean` Whether fetch success or not.
-    * `response: Response` Fetch response.
 
 Polling with fetch by specified milliseconds.
 
@@ -117,15 +133,24 @@ for await (const {ok, response} of poll('http://...', {}, 1000)) {
 ## sse
 
 ```typescript
-sse(url: string, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>
+type SeverSentEventResponse = {
+  // ServerSentEvent response value.
+  event: any
+
+  // SeverSentEvent event type.
+  type: string
+
+  // Dispose event listener.
+  dispose: () => void
+}
+```
+
+```typescript
+sse(url: string, type: string): Promise<Generator<SeverSentEventResponse>>
 ```
 
 * `url: string` Request endpoint.
 * `type: string` Event type.
-* `Return`
-    * `event: any` ServerSentEvent response value.
-    * `type: string` SeverSentEvent event type.
-    * `dispose: () => void` Dispose event listener.
 
 Listening and waiting ServerSentEvent.
 
@@ -143,16 +168,27 @@ for await (const {event, dispose} of sse('https://www.ex.com/event', 'request'))
 ## ws
 
 ```typescript
-ws(url: string, events?: string|string[] = null, socketIO?: SocketIO = null): Promise<Generator<{event: any, type: string, dispose: () => void}>>
+type WebSocketResponse = {
+  // Response data.
+  event: any
+
+  // Event type (ex. 'connection').
+  type: string
+
+  // WebSocket handler remover function.
+  dispose: () => void
+}
+```
+
+
+```typescript
+ws(url: string, events?: string|string[] = null, socketIO?: SocketIO = null): Promise<Generator<WebSocketResponse>>
 ```
 
 * `url: string` WebSocket endpoint.
 * `events?: string|string[]` Socket.IO additional events. Specifiable only Socket.IO.
 * `socketIO?: SocketIO` Socket.IO constructor function.
-* `Return`
-    * `event: any` Response data.
-    * `type: string` Event type (ex. 'connection').
-    * `dispose: () => void` Remove websocket handler.
+
 
 **examples**
 
@@ -169,15 +205,28 @@ for await (const {event, type, dispose} of ws('https://www.ex.com/ws', 'request'
 
 ```typescript
 type RetryableOptions = {
+  // Fetch options
   options: FetchOption = {}
+
+  // Interval timing function.
   timing: (count: number) => number = () => 1000
+
+  // Maximum interval limit.
   limit: number = 5
+
+  // Function that check fetch request is failed or not.
   isFailed: (res: Response) => boolean = res => !res.ok
 }
 ```
 
 ```typescript
-type RetryableResponse = {ok: boolean, response: Response}
+type RetryableResponse = {
+  // Whether fetch succeeded or not.
+  ok: boolean
+
+  // Fetch response.
+  response: Response
+}
 ```
 
 ```typescript
@@ -185,11 +234,7 @@ retryable(url: string, options: RetryableOptions): Promise<Generator<RetryableRe
 ```
 
 * `url: string` Request endpoint.
-* `options`
-    * `options: FetchOption` `default: {}` Fetch options.
-    * `timing: (count: number) => number` `default: () => 1000` Interval timing function.
-    * `limit: number` `default: 5` Maximum interval limit.
-    * `isFailed: (res: Response) => boolean` `default: res => !res.ok` Function that check fetch request is failed or not.
+* `options: RetryableOptions` See RetryableOptions.
 
 Retryable fetch wrapper that retry until maximun retry count if request failed.
 
@@ -252,20 +297,41 @@ stream(url: string, options: StreamOptions): Promise<Generator<StreamResponse>>
 * `url: string` Fetch url
 * `options: StreamOptions` See StreamOptions.
 
+**examples**
+
+```javascript
+for await (const {ok, done, chunk} of stream('http://ex.com/stream', {binary: true, buffering: true})) {
+  if (done) {
+    const result = chunk.drainBuffer();
+    console.log(result);
+  }
+}
+```
+
 
 ## event
 
 ```typescript
-event(dom: string|HTMLElement, type: string|string[], selector?: string): Promise<Generator<{event: Event, type: string, dispose: () => void}>>
+type EventResponse = {
+  // Event object.
+  event: Event,
+
+  // Event type (ex. 'click').
+  type: string,
+
+  // Event handler remover function.
+  dispose: () => void
+}
+```
+
+
+```typescript
+event(dom: string|HTMLElement, type: string|string[], selector?: string): Promise<Generator<EventResponse>>
 ```
 
 * `dom: string|HTMLElement` Target dom node or css selector. If css selector specified and exists more than two element, only first one element is used.
 * `type: string|string[]` Listening event type.
 * `selector?: string` CSS selector, if specified watch event bubbling like jQuery.live().
-* `Return`
-    * `event: Event` Event object.
-    * `type: string` Event type (ex. 'click').
-    * `dispose: () => void` Remove event handler.
 
 Listening and wating dom events.
 
