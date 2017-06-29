@@ -102,7 +102,7 @@ poll(url: string, options: FetchOption, interval: number = 1000): Promise<Genera
 
 Polling with fetch by specified milliseconds.
 
-### examples
+*examples*
 
 ```javascript
 for await (const {ok, response} of poll('http://...', {}, 1000)) {
@@ -129,7 +129,7 @@ sse(url: string, type: string): Promise<Generator<{event: any, type: string, dis
 
 Listening and waiting ServerSentEvent.
 
-### examples
+*examples*
 
 ```javascript
 for await (const {event, dispose} of sse('https://www.ex.com/event', 'request')) {
@@ -154,7 +154,7 @@ ws(url: string, events?: string|string[] = null, socketIO?: SocketIO = null): Pr
     * `type: string` Event type (ex. 'connection').
     * `dispose: () => void` Remove websocket handler.
 
-### examples
+*examples*
 
 ```javascript
 for await (const {event, type, dispose} of ws('https://www.ex.com/ws', 'request', io)) {
@@ -193,7 +193,7 @@ retryable(url: string, options: RetryableOptions): Promise<Generator<RetryableRe
 
 Retryable fetch wrapper that retry until maximun retry count if request failed.
 
-### examples
+*examples*
 
 ```javascript
 async function getJson() {
@@ -244,7 +244,7 @@ event(dom: string|HTMLElement, type: string|string[], selector?: string): Promis
 
 Listening and wating dom events.
 
-### examples
+*examples*
 
 ```javascript
 for await (const {event, type, dispose} of event('#el', 'click')) {
