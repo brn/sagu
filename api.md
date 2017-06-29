@@ -2,7 +2,9 @@
 
 ### wait
 
-`wait<T>(ms: number, retval?: T): Promise<Generator<T>>`
+```
+wait<T>(ms: number, retval?: T): Promise<Generator<T>>
+```
 
 * `ms: number` Milliseconds to wait.
 * `retval: T` Return value of wait. `default: null`.
@@ -20,7 +22,9 @@ for await (const x of [100, 200, 300]) {
 
 ### intervals
 
-`intervals(time: number, skipStart: boolean = false): Promise<Generator<number>>`
+```
+intervals(time: number, skipStart: boolean = false): Promise<Generator<number>>
+```
 
 * `time: number` Milliseconds to interval.
 * `skipStart: boolean = false` Skip waiting at first time.
@@ -40,7 +44,9 @@ for await (const count of intervals(100)) {
 
 ### infinity
 
-`infinity(start: number = 0): Promise<Generator<number>>`
+```
+infinity(start: number = 0): Promise<Generator<number>>
+```
 
 * `start: number` Initial count value.
 * `Return` Current count.
@@ -57,7 +63,9 @@ for (const count of infinity(1)) {
 
 ### emitter
 
-`emitter(emitter: EventEmitter, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>`
+```
+emitter(emitter: EventEmitter, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>
+```
 
 * `emitter: EventEmitter` EventEmitter instance.
 * `type: string` Event type.
@@ -81,7 +89,9 @@ for await (const {event, dispose} of emitter(em, 'event')) {
 
 ### poll
 
-`poll(url: string, options: FetchOption, interval: number = 1000): Promise<Generator<{ok: boolean, response: Response}>>`
+```
+poll(url: string, options: FetchOption, interval: number = 1000): Promise<Generator<{ok: boolean, response: Response}>>
+```
 
 * `url: string` Request endpoint.
 * `options: FetchOption` Fetch options.
@@ -106,7 +116,9 @@ for await (const {ok, response} of poll('http://...', {}, 1000)) {
 
 ### sse
 
-`sse(url: string, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>`
+```
+sse(url: string, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>
+```
 
 * `url: string` Request endpoint.
 * `type: string` Event type.
@@ -130,7 +142,9 @@ for await (const {event, dispose} of sse('https://www.ex.com/event', 'request'))
 
 ### ws
 
-`ws(url: string, events?: string|string[] = null, socketIO?: SocketIO = null): Promise<Generator<{event: any, type: string, dispose: () => void}>>`
+```
+ws(url: string, events?: string|string[] = null, socketIO?: SocketIO = null): Promise<Generator<{event: any, type: string, dispose: () => void}>>
+```
 
 * `url: string` WebSocket endpoint.
 * `events?: string|string[]` Socket.IO additional events. Specifiable only Socket.IO.
@@ -166,7 +180,9 @@ type RetryableOptions = {
 type RetryableResponse = {ok: boolean, response: Response}
 ```
 
-`retryable(url: string, {options = {}, timing = () => 1000, limit = 5, isFailed = res => !res.ok}: RetryableOptions): Promise<Generator<RetryableResponse>>`
+```
+retryable(url: string, {options = {}, timing = () => 1000, limit = 5, isFailed = res => !res.ok}: RetryableOptions): Promise<Generator<RetryableResponse>>
+```
 
 * `url: string` Request endpoint.
 * `options`
@@ -208,11 +224,15 @@ class ChunkReader {
 }
 ```
 
-`stream(url: string, {binary = false, buffering = true, options = {}, timing = () => 1000, limit = 5, isFailed = res => !res.ok}: StreamOptions): Promise<Generator<StreamResponse>>`
+```
+stream(url: string, {binary = false, buffering = true, options = {}, timing = () => 1000, limit = 5, isFailed = res => !res.ok}: StreamOptions): Promise<Generator<StreamResponse>>
+```
 
 ### event
 
-`event(dom: string|HTMLElement, type: string|string[], selector?: string): Promise<Generator<{event: Event, type: string, dispose: () => void}>>`
+```
+event(dom: string|HTMLElement, type: string|string[], selector?: string): Promise<Generator<{event: Event, type: string, dispose: () => void}>>
+```
 
 * `dom: string|HTMLElement` Target dom node or css selector. If css selector specified and exists more than two element, only first one element is used.
 * `type: string|string[]` Listening event type.
