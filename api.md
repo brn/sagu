@@ -1,6 +1,6 @@
 # API
 
-### wait
+## wait
 
 ```typescript
 wait<T>(ms: number, retval?: T): Promise<Generator<T>>
@@ -12,7 +12,7 @@ wait<T>(ms: number, retval?: T): Promise<Generator<T>>
 
 Wait specified milliseconds.
 
-#### examples
+### examples
 
 ```javascript
 for await (const x of [100, 200, 300]) {
@@ -20,7 +20,7 @@ for await (const x of [100, 200, 300]) {
 }
 ```
 
-### intervals
+## intervals
 
 ```typescript
 intervals(time: number, skipStart: boolean = false): Promise<Generator<number>>
@@ -32,7 +32,7 @@ intervals(time: number, skipStart: boolean = false): Promise<Generator<number>>
 
 Loop specified milliseconds intervals.
 
-#### examples
+### examples
 
 ```javascript
 for await (const count of intervals(100)) {
@@ -42,7 +42,7 @@ for await (const count of intervals(100)) {
 }
 ```
 
-### infinity
+## infinity
 
 ```typescript
 infinity(start: number = 0): Promise<Generator<number>>
@@ -53,7 +53,7 @@ infinity(start: number = 0): Promise<Generator<number>>
 
 Infinite value generator.
 
-#### examples
+### examples
 
 ```javascript
 for (const count of infinity(1)) {
@@ -61,7 +61,7 @@ for (const count of infinity(1)) {
 }
 ```
 
-### emitter
+## emitter
 
 ```typescript
 emitter(emitter: EventEmitter, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>
@@ -76,7 +76,7 @@ emitter(emitter: EventEmitter, type: string): Promise<Generator<{event: any, typ
 
 Listening and wating event emitter event.
 
-#### examples
+### examples
 
 ```javascript
 for await (const {event, dispose} of emitter(em, 'event')) {
@@ -87,7 +87,7 @@ for await (const {event, dispose} of emitter(em, 'event')) {
 }
 ```
 
-### poll
+## poll
 
 ```typescript
 poll(url: string, options: FetchOption, interval: number = 1000): Promise<Generator<{ok: boolean, response: Response}>>
@@ -102,7 +102,7 @@ poll(url: string, options: FetchOption, interval: number = 1000): Promise<Genera
 
 Polling with fetch by specified milliseconds.
 
-#### examples
+### examples
 
 ```javascript
 for await (const {ok, response} of poll('http://...', {}, 1000)) {
@@ -114,7 +114,7 @@ for await (const {ok, response} of poll('http://...', {}, 1000)) {
 }
 ```
 
-### sse
+## sse
 
 ```typescript
 sse(url: string, type: string): Promise<Generator<{event: any, type: string, dispose: () => void}>>
@@ -129,7 +129,7 @@ sse(url: string, type: string): Promise<Generator<{event: any, type: string, dis
 
 Listening and waiting ServerSentEvent.
 
-#### examples
+### examples
 
 ```javascript
 for await (const {event, dispose} of sse('https://www.ex.com/event', 'request')) {
@@ -140,7 +140,7 @@ for await (const {event, dispose} of sse('https://www.ex.com/event', 'request'))
 }
 ```
 
-### ws
+## ws
 
 ```typescript
 ws(url: string, events?: string|string[] = null, socketIO?: SocketIO = null): Promise<Generator<{event: any, type: string, dispose: () => void}>>
@@ -154,7 +154,7 @@ ws(url: string, events?: string|string[] = null, socketIO?: SocketIO = null): Pr
     * `type: string` Event type (ex. 'connection').
     * `dispose: () => void` Remove websocket handler.
 
-#### examples
+### examples
 
 ```javascript
 for await (const {event, type, dispose} of ws('https://www.ex.com/ws', 'request', io)) {
@@ -165,7 +165,7 @@ for await (const {event, type, dispose} of ws('https://www.ex.com/ws', 'request'
 }
 ```
 
-### retryable
+## retryable
 
 ```typescript
 type RetryableOptions = {
@@ -193,7 +193,7 @@ retryable(url: string, options: RetryableOptions): Promise<Generator<RetryableRe
 
 Retryable fetch wrapper that retry until maximun retry count if request failed.
 
-#### examples
+### examples
 
 ```javascript
 async function getJson() {
@@ -202,7 +202,7 @@ async function getJson() {
 getJson()
 ```
 
-### stream
+## stream
 
 ```typescript
 type StreamOptions = RetryableOptions && {
@@ -228,7 +228,7 @@ class ChunkReader {
 stream(url: string, options: StreamOptions): Promise<Generator<StreamResponse>>
 ```
 
-### event
+## event
 
 ```typescript
 event(dom: string|HTMLElement, type: string|string[], selector?: string): Promise<Generator<{event: Event, type: string, dispose: () => void}>>
@@ -244,7 +244,7 @@ event(dom: string|HTMLElement, type: string|string[], selector?: string): Promis
 
 Listening and wating dom events.
 
-#### examples
+### examples
 
 ```javascript
 for await (const {event, type, dispose} of event('#el', 'click')) {
