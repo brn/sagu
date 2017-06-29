@@ -206,20 +206,41 @@ getJson()
 
 ```typescript
 type StreamOptions = RetryableOptions && {
+  // If true, parse response as binary and not convert to string.
   binary: boolean = false;
+
+  // If true, buffering chunk.
   buffering: boolean = true;
 }
 ```
 
 ```typescript
-type StreamResponse = {ok: boolean, chunk: ChunkReader, done: boolean}
+type StreamResponse = {
+  // Whther fetch succeeded or not.
+  ok: boolean
+
+  // CunkReader instance.
+  chunk: ChunkReader
+
+  // Whether stream is exit or not.
+  done: boolean
+}
 ```
 
 ```typescript
 class ChunkReader {
+  // Read chunk value.
   read(): Uint8Array,
+
+  // Return whether buffered or not.
   isBuffered(): boolean;
+
+  // Return all buffered value that is concatenated as Uint8Array if binary options is true,  
+  // or string if binary option is false,  
+  // or null if buffering option is false.
   drainBuffer(): Uint8Array|string;
+
+  // Stop reading stream.
   cancel(): void
 }
 ```
@@ -227,6 +248,10 @@ class ChunkReader {
 ```typescript
 stream(url: string, options: StreamOptions): Promise<Generator<StreamResponse>>
 ```
+
+* `url: string` Fetch url
+* `options: StreamOptions` See StreamOptions.
+
 
 ## event
 
