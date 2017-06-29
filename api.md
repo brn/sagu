@@ -216,7 +216,7 @@ type StreamOptions = RetryableOptions && {
 
 ```typescript
 type StreamResponse = {
-  // Whther fetch succeeded or not.
+  // Whether fetch succeeded or not.
   ok: boolean
 
   // CunkReader instance.
