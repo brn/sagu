@@ -163,10 +163,10 @@ export async function* ws(url, events, socketIO = null) {
  * @param {Function(): Promise<Response>} promise Fetch result.
  * @param {number} max Max retriable count.
  * @param {function(number): number} timingFn Retry timing generator.
- * @returns {Response}
+ * @returns {{ok: boolean, response: Response}}
  *
  * @example
- * const response = await retryable(`http://localhost:9877/failed?_=${Date.now()}`, {
+ * const {ok, response} = await retryable(`http://localhost:9877/failed?_=${Date.now()}`, {
  *   options: {mode: 'cors'}, // optional
  *   limit: 10, // optional default 5
  *   timing() {return 100}, // optional  default 1000
@@ -182,5 +182,198 @@ export async function retryable(url, {options = {}, timing = () => 1000, limit =
       return {ok: false, response};
     }
     await wait(timing(time));
+  }
+}
+
+
+
+/**
+ * Stream Buffer.
+ */
+export class Buffer {
+  /**
+   * @param {boolean} isBinary Whether stream data is binary or not.
+   */
+  constructor(isBinary) {
+    this._buffer = [];
+    this._isBinary = isBinary;
+    this._locked = false;
+  }
+
+  /**
+   * Append value to buffer.
+   * @param {string|Uint8Array} value Stream chunk.
+   */
+  enqueu(value) {
+    this._buffer.push(value);
+  }
+
+  /**
+   * Return concatenated buffered value.
+   * @returns {string|ArrayBuffe} Buffered values.
+   */
+  readAll() {
+    const buffer = Buffer.concat(this._buffer);
+    return !this._isBinary? this.toString(): buffer;
+  }
+
+  /**
+   * convert uint8Array to utf8 string.
+   * @returns {string} Converted string.
+   */
+  toString() {
+    if (!this._isBinary) {
+      return Buffer.convertUint8ArrayToUtfString(Buffer.concat(this._buffer));
+    }
+    return Buffer.conat(this._buffer).toString();
+  }
+
+  /**
+   * Creates a new Uint8Array based on different ArrayBuffers
+   * @param {ArrayBuffer[]} buffers Array of ArrayBuffer.
+   * @return {ArrayBuffer} The new ArrayBuffer created out of the buffers.
+   */
+  static concat(buffers) {
+    const length = buffers.reduce((len, buf) => len + buf.length, 0);
+    let offset = 0;
+    return buffers.reduce((buf, val) => {
+      buf.set(val, offset);
+      offset += val.length;
+      return buf;
+    }, new Uint8Array(length));
+  };
+
+  /**
+   * Reference https://stackoverflow.com/a/22373135  
+   * convert uint8Array to utf8 string.
+   * @param {Uint8Array} buffer
+   * @returns {string} Converted string.
+   */
+  static convertUint8ArrayToUtfString(buffer) {
+    const outputBuffer = [];
+
+    for (let i = 0, len = buffer.length; i < len;) {
+      const c = buffer[i++];
+      const codePoint = c >> 4;
+      if (codePoint >= 0 && codePoint <= 7) {
+        // 1byte code -- 0xxxxxxx
+        outputBuffer.push(String.fromCharCode(c));
+      } else if (codePoint >= 12 && codePoint <= 13) {
+        // 2byte code -- 110xxxxx   10xxxxxx
+        const c2 = buffer[i++];
+        outputBuffer.push(String.fromCharCode(((c & 0x1F) << 6) | (c2 & 0x3F)));
+      } else if (codePoint === 14) {
+        // 3byte code -- 1110xxxx  10xxxxxx  10xxxxxx
+        const c2 = buffer[i++];
+        const c3 = buffer[i++];
+        outputBuffer.push(String.fromCharCode(((c & 0x0F) << 12) |
+                                              ((c2 & 0x3F) << 6) |
+                                              ((c3 & 0x3F) << 0)));
+      }
+    }
+
+    return outputBuffer.join(''); 
+  }
+}
+
+
+/**
+ * Read stream with loop.
+ * @param {Response} response Response object.
+ */
+async function* readStream(response) {
+  const reader = response.body.getReader();
+  while (1) {
+    const chunk = await reader.read();
+    yield {chunk, reader};
+  }
+}
+
+
+/**
+ * Chunk Reader.
+ */
+class ChunkReader {
+  /**
+   * @param {{
+   *   chunk: Uint8Array,
+   *   buffer?: Buffer,
+   *   reader: ReadableStream
+   * }} opt
+   */
+  constructor({chunk, buffer, reader}) {
+    this._chunk = chunk;
+    this._buffer = buffer;
+    this._reader = reader;
+  }
+
+
+  /**
+   * Read chunk.
+   * @returns {Uint8Array} Chunk value.
+   */
+  read() {
+    return this._chunk;
+  }
+
+
+  /**
+   * Return whether buffered or not.
+   * @returns {boolean} Buffering
+   */
+  isBuffered() {
+    return !!this._buffer;
+  }
+
+
+  /**
+   * Return buffered value.
+   * @returns {Uint8Array|string} Buffered value.
+   */
+  drainBuffer() {
+    return this._buffer? this._buffer.readAll(): null;
+  }
+
+  /**
+   * Cancel stream.
+   */
+  cancel() {this._reader.cancel()}
+}
+const IS_STREAM_SUPPORTED = !!window.ReadableStream && !!window.WritableStream;
+const EMPTY_ARRAY = window.Uint8Array? new Uint8Array(new ArrayBuffer(0)): null;
+const FAILED_CHUNK = new ChunkReader({chunk: null, buffer: null, reader: null, ok: false, done: true});
+
+
+/**
+ * Reading streaming data.
+ * @param {string} url Fetch url.
+ * @param {Retryable.Options} retryOption Retryable options.
+ * @param {boolean} binary Is data is binary or not.
+ * @param {boolean} buffering Whther buffering stream response or not.
+ */
+export async function* stream(url, {binary = false, buffering = true, ...retryOptions}) {
+  if (!IS_STREAM_SUPPORTED) {
+    throw new Error('Stream not supported in this environment!');
+  }
+  const {ok, response} = await retryable(url, retryOptions);
+  if (!ok) {
+    return FAILED_CHUNK;
+  }
+
+  const buffer = buffering? new Buffer(binary): null;
+
+  for await (const {chunk: {value, done}, reader} of readStream(response)) {
+    if (done) {
+      const sentinel = Object.freeze({chunk: new ChunkReader({chunk: EMPTY_ARRAY, buffer, reader}), ok, done});
+      while (1) {
+        yield sentinel;
+      }
+    }
+
+    if (buffering) {
+      buffer.enqueu(value);
+    }
+
+    yield Object.freeze({chunk: new ChunkReader({chunk: value, buffer, reader}), ok, done});
   }
 }

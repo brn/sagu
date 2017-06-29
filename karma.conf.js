@@ -25,6 +25,7 @@ const app = express();
 
 module.exports = config => {
   const server = http.Server(app);
+  const fs = require('fs');
   app.get('/sse', sse, (req, res) => {
     const a = setInterval(() => {
       res.sse('test', {key: 'test'});
@@ -44,6 +45,19 @@ module.exports = config => {
       });
       res.end(JSON.stringify({key: 'success'}));
     }
+  });
+  app.get('/binary-stream', (req, res) => {
+    res.writeHead(200, {
+      'access-control-allow-origin': '*'
+    });
+    fs.createReadStream('./binary').pipe(res);
+  });
+  app.get('/json-stream', (req, res) => {
+    res.writeHead(200, {
+      'content-type': 'application/json',
+      'access-control-allow-origin': '*'
+    });
+    fs.createReadStream('./examples.json').pipe(res);
   });
   const io = socketIO(server);
   io.on('connection', socket => {
@@ -65,7 +79,6 @@ module.exports = config => {
       "karma-rollup-preprocessor"
     ],
     files: [
-      {pattern: "http://localhost:9877/socket.io/socket.io.js"},
       {pattern: './node_modules/babel-polyfill/dist/polyfill.js'},
       {pattern: './src/**/__tests__/**/*.spec.js'}
     ],
@@ -74,13 +87,37 @@ module.exports = config => {
     },
     usePolling: false,
     browserNoActivityTimeout: 15000,
-    frameworks: ["mocha", "source-map-support"],
+    frameworks: ["mocha"],
     reporters: ["mocha"],
     preprocessors: {
-      'src/**/*.js': ["rollup"]
+      'src/**/*.js': ["rollup"],
+      'src/**/*.json': ["rollup"]
+    },
+    customLaunchers: {
+      ChromeHeadless: {
+        base: 'Chrome',
+        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
+      }
+    },
+    client: {
+      captureConsole: true
+    },
+    browserConsoleLogOptions: {
+      level: 'log',
+      format: '%b %T: %m',
+      terminal: true
     },
     rollupPreprocessor: {
 			plugins: [
+        require('rollup-plugin-json')({          
+          // for tree-shaking, properties will be declared as
+          // variables, using either `var` or `const`
+          preferConst: true, // Default: false
+
+          // specify indentation for the generated default export —
+          // defaults to '\t'
+          indent: '  '
+        }),
         require('rollup-plugin-node-resolve')({
           jsnext: true,
           main: true,
@@ -94,13 +131,15 @@ module.exports = config => {
         require('rollup-plugin-commonjs')({
           include: 'node_modules/**',
           extensions: [
-            '.js'
+            '.js',
+            ".json"
           ],
           namedExports: {
-            'node_modules/chai/index.js': ['expect', 'should' ]
+            'node_modules/chai/index.js': ['expect', 'should' ],
+            'node_modules/socket.io-client/index.js': ['io']
           }
         }),
-				require('rollup-plugin-babel')(),
+				require('rollup-plugin-babel')()
 			],
 			format: 'iife',               // Helps prevent naming collisions.
 			moduleName: 'sagu', // Required for 'iife' format.
